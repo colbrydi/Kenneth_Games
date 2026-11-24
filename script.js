@@ -71,17 +71,17 @@ async function initializeConfig() {
 }
 
 // ============================================================================
-// MODULE 2: API Calls & Data Fetching
+// MODULE 2: Data Loading
 // ============================================================================
 
 /**
  * Fetch with CORS proxy fallback
  * Handles CORS errors and network errors gracefully
+ * Used only for fetching user profile icon (server-to-server requests don't need this)
  */
 async function fetchWithFallback(url) {
     try {
         const response = await fetch(url);
-        // Check if response is ok (not a CORS error or other failure)
         if (response.ok) {
             return response;
         }
@@ -90,7 +90,7 @@ async function fetchWithFallback(url) {
         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
         return await fetch(proxyUrl);
     } catch (error) {
-        // Network error or fetch completely failed - try proxy
+        // Network error - try proxy
         console.warn('Direct fetch error, trying CORS proxy:', error.message);
         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
         return await fetch(proxyUrl);
@@ -98,51 +98,29 @@ async function fetchWithFallback(url) {
 }
 
 /**
- * Load all projects for a user from Scratch API
+ * Load all projects from projects.json
  * Returns: array of project objects {id, title, description, featured}
  */
 async function loadProjects() {
-    const username = CONFIG.scratchUsername;
-
     try {
-        // Validate user exists
-        const userResponse = await fetchWithFallback(
-            `${SCRATCH_API_BASE}/users/${username}/`
-        );
+        const response = await fetch('projects.json');
 
-        if (!userResponse.ok) {
+        if (!response.ok) {
             throw new Error(
-                `Scratch user "${username}" not found. ` +
-                `Make sure the username is public on Scratch.`
+                `Failed to load projects.json (HTTP ${response.status})`
             );
         }
 
-        // Fetch projects
-        const projectsResponse = await fetchWithFallback(
-            `${SCRATCH_API_BASE}/users/${username}/projects`
-        );
-
-        if (!projectsResponse.ok) {
-            throw new Error(
-                `Failed to fetch projects (HTTP ${projectsResponse.status})`
-            );
-        }
-
-        const projects = await projectsResponse.json();
+        const projects = await response.json();
 
         if (!Array.isArray(projects) || projects.length === 0) {
             throw new Error(
-                `No public projects found for "${username}". ` +
-                `Create and publish some games on Scratch!`
+                `No projects found in projects.json. ` +
+                `The daily update may not have run yet. Try again later.`
             );
         }
 
-        return projects.map(project => ({
-            id: project.id.toString(),
-            title: project.title || 'Untitled',
-            description: project.description || '',
-            featured: false
-        }));
+        return projects;
 
     } catch (error) {
         showError(error.message);

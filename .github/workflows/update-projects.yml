@@ -1,0 +1,43 @@
+name: Update Scratch Projects
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC (adjust time as needed)
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # Allow manual trigger from GitHub
+
+jobs:
+  update-projects:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Fetch Scratch projects
+        id: fetch
+        run: |
+          # Fetch projects from Scratch API
+          RESPONSE=$(curl -s "https://api.scratch.mit.edu/users/KenRemoLC/projects?limit=40")
+          
+          # Transform to projects.json format
+          echo "$RESPONSE" | jq '[.[] | {id: .id | tostring, title: .title, description: .description // "", featured: false}]' > projects.json
+          
+          echo "Updated $(jq 'length' projects.json) projects"
+      
+      - name: Commit and push if changed
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          
+          if git diff --quiet projects.json; then
+            echo "No changes to projects"
+          else
+            echo "Projects updated, committing..."
+            git add projects.json
+            git commit -m "Update projects from Scratch API"
+            git push
+          fi
