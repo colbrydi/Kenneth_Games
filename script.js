@@ -53,19 +53,24 @@ function initializeConfig() {
 
 /**
  * Fetch with CORS proxy fallback
- * Handles network errors gracefully for local testing
+ * Handles CORS errors and network errors gracefully
  */
 async function fetchWithFallback(url) {
     try {
         const response = await fetch(url);
-        return response;
-    } catch (error) {
-        if (error.name === 'TypeError' || error.message.includes('NetworkError')) {
-            console.warn('Direct fetch failed, trying CORS proxy...');
-            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-            return await fetch(proxyUrl);
+        // Check if response is ok (not a CORS error or other failure)
+        if (response.ok) {
+            return response;
         }
-        throw error;
+        // If not ok, try with proxy for CORS issues
+        console.warn('Direct fetch failed or blocked by CORS, trying proxy...');
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        return await fetch(proxyUrl);
+    } catch (error) {
+        // Network error or fetch completely failed - try proxy
+        console.warn('Direct fetch error, trying CORS proxy:', error.message);
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        return await fetch(proxyUrl);
     }
 }
 
