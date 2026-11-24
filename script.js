@@ -257,7 +257,7 @@ function showError(message) {
  */
 async function initializeGallery() {
     // Step 1: Configure page with user settings
-    if (!initializeConfig()) {
+    if (!await initializeConfig()) {
         return;
     }
 
