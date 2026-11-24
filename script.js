@@ -26,7 +26,7 @@ const SCRATCH_PROJECT_BASE = 'https://scratch.mit.edu/projects/';
  * Initialize page with user configuration
  * Updates: page title, user link, user profile
  */
-function initializeConfig() {
+async function initializeConfig() {
     if (!CONFIG || !CONFIG.scratchUsername) {
         showError('CONFIG.js is missing or invalid. Please check the file.');
         return false;
@@ -39,9 +39,32 @@ function initializeConfig() {
 
     // Update user link
     const userLink = document.getElementById('user-link');
+    const userIcon = document.getElementById('user-icon');
+    const usernameText = document.getElementById('username-text');
+    
     if (userLink) {
-        userLink.textContent = username;
         userLink.href = `https://scratch.mit.edu/users/${username}/`;
+    }
+    
+    if (usernameText) {
+        usernameText.textContent = username;
+    }
+
+    // Fetch user profile to get icon
+    try {
+        const userResponse = await fetchWithFallback(
+            `${SCRATCH_API_BASE}/users/${username}/`
+        );
+        
+        if (userResponse.ok) {
+            const userProfile = await userResponse.json();
+            if (userProfile.profile && userProfile.profile.images && userProfile.profile.images['90x90'] && userIcon) {
+                userIcon.src = userProfile.profile.images['90x90'];
+                userIcon.alt = `${username}'s profile picture`;
+            }
+        }
+    } catch (error) {
+        console.warn('Could not load user profile icon:', error);
     }
 
     return true;

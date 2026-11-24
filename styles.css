@@ -46,17 +46,32 @@ header h1 {
     text-decoration: none;
     font-weight: 500;
     transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.user-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: inline-block;
+    vertical-align: middle;
+    transition: transform 0.2s ease;
+}
+
+.user-info a:hover .user-icon {
+    transform: scale(1.1);
 }
 
 .user-info a:hover {
     color: #ff9999;
-    text-decoration: underline;
 }
 
 .user-info a:focus {
     outline: 2px solid #ff6b6b;
     outline-offset: 2px;
-    border-radius: 2px;
+    border-radius: 4px;
 }
 
 footer {
