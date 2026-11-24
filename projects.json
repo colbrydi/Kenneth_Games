@@ -1,0 +1,29 @@
+[
+    {
+        "id": "649608939",
+        "title": "Platformer Game",
+        "description": "A simple platformer with obstacles and power-ups",
+        "featured": true
+    },
+    {
+        "id": "649609048",
+        "title": "Memory Match",
+        "description": "Test your memory with matching pairs"
+    },
+    {
+        "id": "649609092",
+        "title": "Snake Game",
+        "description": "Classic snake game with increasing difficulty"
+    },
+    {
+        "id": "649609135",
+        "title": "Quiz Master",
+        "description": "Answer trivia questions to earn points"
+    },
+    {
+        "id": "649609178",
+        "title": "Space Shooter",
+        "description": "Defend Earth from incoming asteroids",
+        "featured": true
+    }
+]
