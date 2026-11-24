@@ -2,7 +2,7 @@
 
 A minimal, mobile-first web gallery that automatically displays all public games from any Scratch account.
 
-See this example in action: <https://github.com/colbrydi/Kenneth_Games/>
+See this example in action: [https://github.com/colbrydi/Kenneth_Games/](https://colbrydi.github.io/Kenneth_Games/)
 
 ## Quick Start (5 minutes)
 
