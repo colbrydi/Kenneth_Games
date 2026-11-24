@@ -17,27 +17,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Fetch Scratch projects
+      - name: Fetch Scratch projects and user data
         id: fetch
         run: |
           # Fetch projects from Scratch API
-          RESPONSE=$(curl -s "https://api.scratch.mit.edu/users/KenRemoLC/projects?limit=40")
+          PROJECTS=$(curl -s "https://api.scratch.mit.edu/users/KenRemoLC/projects?limit=40")
+          echo "$PROJECTS" | jq '[.[] | {id: (.id | tostring), title: .title, description: (.description | if . then . else "" end), featured: false}]' > projects.json
           
-          # Transform to projects.json format
-          echo "$RESPONSE" | jq '[.[] | {id: .id | tostring, title: .title, description: .description // "", featured: false}]' > projects.json
+          # Fetch user profile from Scratch API
+          USER=$(curl -s "https://api.scratch.mit.edu/users/KenRemoLC/")
+          echo "$USER" | jq '{username: .username, profileImageUrl: .profile.images["90x90"]}' > user.json
           
           echo "Updated $(jq 'length' projects.json) projects"
+          echo "Fetched user: $(jq -r .username user.json)"
       
       - name: Commit and push if changed
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           
-          if git diff --quiet projects.json; then
-            echo "No changes to projects"
+          if git diff --quiet projects.json user.json; then
+            echo "No changes to projects or user data"
           else
-            echo "Projects updated, committing..."
-            git add projects.json
-            git commit -m "Update projects from Scratch API"
+            echo "Updates detected, committing..."
+            git add projects.json user.json
+            git commit -m "Update projects and user data from Scratch API"
             git push
           fi

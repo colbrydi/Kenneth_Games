@@ -50,17 +50,14 @@ async function initializeConfig() {
         usernameText.textContent = username;
     }
 
-    // Fetch user profile to get icon
+    // Load user profile data from user.json (fetched by GitHub Action)
     try {
-        const userResponse = await fetchWithFallback(
-            `${SCRATCH_API_BASE}/users/${username}/`
-        );
-        
-        if (userResponse.ok) {
-            const userProfile = await userResponse.json();
-            if (userProfile.profile && userProfile.profile.images && userProfile.profile.images['90x90'] && userIcon) {
-                userIcon.src = userProfile.profile.images['90x90'];
-                userIcon.alt = `${username}'s profile picture`;
+        const response = await fetch('user.json');
+        if (response.ok) {
+            const userData = await response.json();
+            if (userData.profileImageUrl && userIcon) {
+                userIcon.src = userData.profileImageUrl;
+                userIcon.alt = `${userData.username}'s profile picture`;
             }
         }
     } catch (error) {
@@ -73,29 +70,6 @@ async function initializeConfig() {
 // ============================================================================
 // MODULE 2: Data Loading
 // ============================================================================
-
-/**
- * Fetch with CORS proxy fallback
- * Handles CORS errors and network errors gracefully
- * Used only for fetching user profile icon (server-to-server requests don't need this)
- */
-async function fetchWithFallback(url) {
-    try {
-        const response = await fetch(url);
-        if (response.ok) {
-            return response;
-        }
-        // If not ok, try with proxy for CORS issues
-        console.warn('Direct fetch failed or blocked by CORS, trying proxy...');
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-        return await fetch(proxyUrl);
-    } catch (error) {
-        // Network error - try proxy
-        console.warn('Direct fetch error, trying CORS proxy:', error.message);
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-        return await fetch(proxyUrl);
-    }
-}
 
 /**
  * Load all projects from projects.json
